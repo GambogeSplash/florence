@@ -26,6 +26,18 @@ export async function POST(req: NextRequest) {
 
     const cur = (bodyCurrency || currency()).toLowerCase();
 
+    // Build the post-payment redirect target. Prefers NEXT_PUBLIC_APP_URL,
+    // falls back to the incoming request origin so it works behind Vercel
+    // preview URLs without extra config.
+    const origin =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      req.headers.get("origin") ||
+      req.nextUrl.origin;
+    const successUrl = new URL("/paid", origin);
+    successUrl.searchParams.set("amount", String(amount));
+    successUrl.searchParams.set("currency", cur);
+    successUrl.searchParams.set("description", description);
+
     const link = await stripe().paymentLinks.create({
       line_items: [
         {
@@ -39,6 +51,10 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
+      after_completion: {
+        type: "redirect",
+        redirect: { url: successUrl.toString() },
+      },
     });
 
     return NextResponse.json({

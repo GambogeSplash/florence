@@ -8,7 +8,12 @@ import { Button } from "@/components/Button";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ArcFace } from "@/components/ArcFace";
-import { BusinessProfile, DEFAULT_PROFILE, Service } from "@/lib/types";
+import {
+  BusinessProfile,
+  DEFAULT_AGENT_VOICE_ID,
+  DEFAULT_PROFILE,
+  Service,
+} from "@/lib/types";
 import { saveProfile } from "@/lib/storage";
 
 type Step = 1 | 2 | 3;
@@ -99,7 +104,32 @@ export default function SetupPage() {
         | { error: string };
       if ("error" in agentData) throw new Error(agentData.error);
 
-      const final: BusinessProfile = { ...profile, agentId: agentData.agent_id };
+      // Auto-apply the Florence default voice (Nigerian female) so the demo
+      // lands on a great voice without manual library picking. Best-effort —
+      // if the patch fails, we keep the cloned voice and let the user swap
+      // from the dashboard.
+      setSubmitMessage("Tuning her voice…");
+      let voiceId = profile.voiceId!;
+      try {
+        const r = await fetch("/api/update-voice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            agent_id: agentData.agent_id,
+            voice_id: DEFAULT_AGENT_VOICE_ID,
+          }),
+        });
+        const d = (await r.json()) as { ok?: boolean; error?: string };
+        if (d.ok) voiceId = DEFAULT_AGENT_VOICE_ID;
+      } catch {
+        /* keep cloned voice */
+      }
+
+      const final: BusinessProfile = {
+        ...profile,
+        agentId: agentData.agent_id,
+        voiceId,
+      };
       saveProfile(final);
 
       setSubmitMessage(null);
@@ -125,7 +155,7 @@ export default function SetupPage() {
 
         {step === 1 && (
           <Card title="Business details" subtitle="Step 1 of 3">
-            <Field label="Business logo or photo" hint="Optional. Shows on your dashboard and the call screen.">
+            <Field label="Business logo or photo">
               <ImageUpload
                 value={businessImage}
                 onChange={setBusinessImage}

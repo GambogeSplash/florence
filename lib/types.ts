@@ -1,3 +1,11 @@
+/**
+ * Default agent voice — a Nigerian female from the ElevenLabs library.
+ * Applied automatically after a new agent is created so the demo lands on
+ * a great voice without manual library picking. Users can swap to their
+ * cloned voice from the dashboard.
+ */
+export const DEFAULT_AGENT_VOICE_ID = "eOHsvebhdtt0XFeHVMQY";
+
 export type Service = {
   name: string;
   price: number;
