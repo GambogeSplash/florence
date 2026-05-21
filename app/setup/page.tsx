@@ -477,9 +477,9 @@ function SetupSuccess({ businessName }: { businessName: string }) {
           Receptionist live
         </div>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-          Florence is ready to answer
+          <span className="whitespace-nowrap">Florence is ready to answer</span>
           <br />
-          for {businessName}.
+          <span className="whitespace-nowrap">for {businessName}.</span>
         </h1>
         <p className="text-base text-muted leading-relaxed">
           Try her now. Ask for a price. Ask to book. Watch her send a Stripe
