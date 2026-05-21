@@ -120,13 +120,22 @@ export async function optimizeAgentSpeed(
   if (opts?.systemPrompt) promptPatch.prompt = opts.systemPrompt;
   if (opts?.tools) promptPatch.tools = opts.tools;
 
-  // PATCH ElevenLabs agent. We keep the body minimal because the API is strict
-  // about which fields it accepts under PATCH — fields it doesn't recognize on
-  // the current agent shape cause a 500. The big latency win comes from the
-  // LLM swap; the rest is icing.
+  // PATCH ElevenLabs agent for low-latency English voice. The big knobs:
+  //   - llm: Gemini Flash (fast reasoning, default model is slower)
+  //   - turn.turn_timeout: time the agent waits after the user stops talking
+  //     before responding. Default 7s feels glacial; 0.8s is brisk without
+  //     interrupting normal pauses mid-sentence.
+  //   - tts.model_id: eleven_turbo_v2 is the required English TTS model.
+  //   - tts.optimize_streaming_latency: 3 — start speaking the first chunk
+  //     of audio as soon as it's ready (max 4 = aggressive).
   const body: Record<string, unknown> = {
     conversation_config: {
       agent: { prompt: promptPatch },
+      turn: { turn_timeout: 0.8 },
+      tts: {
+        model_id: "eleven_turbo_v2",
+        optimize_streaming_latency: 3,
+      },
     },
   };
 
