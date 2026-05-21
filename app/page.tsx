@@ -14,8 +14,10 @@ export default function Home() {
             Built for ElevenLabs × Stripe
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] mb-6">
-            <span className="whitespace-nowrap">The voice that picks up</span>
+          <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] mb-6 [text-wrap:balance]">
+            <span className="whitespace-nowrap">
+              The voice<br className="sm:hidden" /> that picks up
+            </span>
             <br />
             <span className="text-accent whitespace-nowrap">when you can&apos;t.</span>
           </h1>
