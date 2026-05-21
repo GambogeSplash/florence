@@ -117,27 +117,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-6 pb-24">
-          <div className="grid md:grid-cols-3 gap-4">
-            <Feature
-              title="Trained in 2 minutes"
-              body="Add your services and prices, record 30 seconds of your voice. We do the rest."
-            />
-            <Feature
-              title="Cloned, not generic"
-              body="Customers hear you. Warm, on-brand. ElevenLabs verification keeps it your voice only."
-            />
-            <Feature
-              title="Closes on the call"
-              body="The agent decides when to send a Stripe payment link. Most receptionists schedule callbacks. This one collects."
-            />
-          </div>
-        </section>
-
-        <footer className="mx-auto max-w-5xl px-6 py-10 border-t border-border text-xs text-muted flex items-center justify-between">
-          <div>
-            Florence · built with ElevenLabs Conversational AI + Stripe Payment
-            Links.
+        <footer className="mx-auto max-w-6xl px-6 py-8 border-t border-border text-xs text-muted flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span>Built with</span>
+            <BuiltWithLogos />
           </div>
           <Link href="/demo" className="text-accent hover:text-accent-dim">
             Meet Florence →
@@ -195,11 +178,50 @@ function CustomerAvatar() {
   );
 }
 
-function Feature({ title, body }: { title: string; body: string }) {
+function BuiltWithLogos() {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <div className="font-medium tracking-tight mb-2">{title}</div>
-      <div className="text-sm text-muted leading-relaxed">{body}</div>
+    <div className="flex items-center gap-3 text-fg/80">
+      <svg
+        viewBox="0 0 80 24"
+        height="14"
+        aria-label="ElevenLabs"
+        className="opacity-80 hover:opacity-100 transition-opacity"
+        fill="currentColor"
+      >
+        {/* Stylized ElevenLabs mark — two vertical bars */}
+        <rect x="3" y="4" width="5" height="16" rx="1" />
+        <rect x="11" y="4" width="5" height="16" rx="1" />
+        <text
+          x="22"
+          y="17"
+          fontFamily='"Inter", system-ui, sans-serif'
+          fontWeight={500}
+          fontSize="13"
+          letterSpacing="-0.02em"
+        >
+          ElevenLabs
+        </text>
+      </svg>
+      <span className="text-muted/40">·</span>
+      <svg
+        viewBox="0 0 60 24"
+        height="14"
+        aria-label="Stripe"
+        className="opacity-80 hover:opacity-100 transition-opacity"
+        fill="currentColor"
+      >
+        <text
+          x="0"
+          y="17"
+          fontFamily='"Inter", system-ui, sans-serif'
+          fontWeight={700}
+          fontSize="15"
+          letterSpacing="-0.04em"
+          fontStyle="italic"
+        >
+          Stripe
+        </text>
+      </svg>
     </div>
   );
 }

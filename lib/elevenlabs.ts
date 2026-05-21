@@ -88,8 +88,8 @@ export async function createAgent(opts: {
       tts: {
         voice_id: opts.voiceId,
         // English Conversational AI agents require turbo or flash v2 TTS.
-        // eleven_turbo_v2_5 is the fastest accepted model.
-        model_id: "eleven_turbo_v2_5",
+        // ElevenLabs validates this string exactly — "_5" variants get rejected.
+        model_id: "eleven_turbo_v2",
       },
     },
   };

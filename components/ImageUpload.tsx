@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 
 type Props = {
   value?: string;
@@ -51,8 +51,6 @@ export function ImageUpload({
     [onChange, size],
   );
 
-  const onPick = () => inputRef.current?.click();
-
   const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) handleFile(f);
@@ -68,24 +66,18 @@ export function ImageUpload({
 
   const clear = () => onChange(undefined);
 
+  const id = useId();
+  const inputId = `image-upload-${id}`;
   return (
     <div className={className}>
-      <div
-        onClick={onPick}
+      <label
+        htmlFor={inputId}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onPick();
-          }
-        }}
         className={`relative flex items-center gap-4 rounded-xl border-2 border-dashed bg-[#0E0E0E] p-3 cursor-pointer transition-colors ${
           dragging
             ? "border-accent/60 bg-accent/5"
@@ -120,6 +112,7 @@ export function ImageUpload({
           <button
             type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               clear();
             }}
@@ -129,13 +122,14 @@ export function ImageUpload({
             ×
           </button>
         )}
-      </div>
+      </label>
       <input
         ref={inputRef}
+        id={inputId}
         type="file"
         accept={ACCEPTED}
         onChange={onInput}
-        className="hidden"
+        className="sr-only"
       />
     </div>
   );

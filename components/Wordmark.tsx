@@ -1,43 +1,27 @@
 "use client";
 
-import { useId } from "react";
-
 type Props = {
   size?: number;
   className?: string;
-  /** Show the pulsing live-dot to the left of the word. Default true. */
+  /** Show the pulsing live-dot to the left of the logo. Default false — the
+   *  florence.svg already carries the brand. Set true in dense nav contexts. */
   showDot?: boolean;
-  /** Use the gradient lettering treatment (Dia / Browser Company inspired). */
-  gradient?: boolean;
-  /** Use uppercase "Florence" instead of lowercase. */
-  uppercase?: boolean;
 };
 
 /**
- * Florence wordmark. Lowercase italic "florence" with a subtle multicolor
- * gradient sweep across the letters — visual cousin to Dia's wordmark — plus
- * the live-dot motif (the brand essence: always picking up).
- *
- * Use `gradient={false}` for nav / dense contexts where solid currentColor
- * reads cleaner. `gradient` defaults on for hero / display contexts.
+ * Florence wordmark. Renders the supplied `/public/florence.svg` — the
+ * user-provided brand mark — at the requested pixel height. Width auto-scales
+ * with the logo's native aspect ratio (~5.87:1, so height 22 ≈ width 130).
  */
 export function Wordmark({
   size = 22,
   className = "",
-  showDot = true,
-  gradient = false,
-  uppercase = false,
+  showDot = false,
 }: Props) {
-  const id = useId();
-  const gradId = `florence-grad-${id}`;
-  const fontSize = size * 0.82;
-  const dotSize = size * 0.32;
-  const label = uppercase ? "Florence" : "florence";
-
+  const dotSize = size * 0.36;
   return (
     <span
       className={`inline-flex items-center gap-[0.5em] ${className}`}
-      style={{ height: size }}
       aria-label="Florence"
     >
       {showDot && (
@@ -53,45 +37,22 @@ export function Wordmark({
           />
         </span>
       )}
-      {gradient ? (
-        <svg
-          height={size}
-          viewBox={`0 0 ${label.length * 11.5} ${size}`}
-          style={{ display: "inline-block" }}
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#00FF85" />
-              <stop offset="35%" stopColor="#FAFAFA" />
-              <stop offset="65%" stopColor="#FAFAFA" />
-              <stop offset="100%" stopColor="#C084FC" />
-            </linearGradient>
-          </defs>
-          <text
-            x="0"
-            y={size * 0.78}
-            fontFamily='"Inter", system-ui, sans-serif'
-            fontWeight={500}
-            fontStyle="italic"
-            fontSize={fontSize}
-            letterSpacing={-fontSize * 0.04}
-            fill={`url(#${gradId})`}
-          >
-            {label}
-          </text>
-        </svg>
-      ) : (
-        <span
-          className="font-medium italic leading-none select-none"
-          style={{
-            fontSize,
-            letterSpacing: "-0.025em",
-          }}
-        >
-          {label}
-        </span>
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/florence.svg"
+        alt="Florence"
+        height={size}
+        style={{
+          height: size,
+          width: "auto",
+          display: "block",
+          // Stack tight drop-shadows in the same color to add visual weight
+          // to the rasterized logo (acts like a bolder weight).
+          filter:
+            "drop-shadow(0 0 0.35px currentColor) drop-shadow(0 0 0.35px currentColor)",
+        }}
+        draggable={false}
+      />
     </span>
   );
 }

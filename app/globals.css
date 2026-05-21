@@ -57,14 +57,14 @@ html, body {
   to { opacity: 1; }
 }
 
-/* Arc-style luminous purple — bright lavender top, royal purple core,
-   soft magenta lift, deep aubergine base. Flows on a slow loop. */
+/* Florence green — emerald + signal-green over deep moss base.
+   Same flow pattern as the violet variant; swap stops to compare. */
 .call-bg {
   background:
-    radial-gradient(130% 100% at 28% 22%, #C084FC 0%, transparent 58%),
-    radial-gradient(120% 90% at 75% 60%, #9333EA 0%, transparent 62%),
-    radial-gradient(110% 80% at 45% 95%, #D946EF 0%, transparent 45%),
-    radial-gradient(150% 110% at 50% 100%, #3B0764 0%, #15012E 100%);
+    radial-gradient(130% 100% at 28% 22%, #34D399 0%, transparent 58%),
+    radial-gradient(120% 90% at 75% 60%, #00B85F 0%, transparent 62%),
+    radial-gradient(110% 80% at 45% 95%, #5EEAD4 0%, transparent 45%),
+    radial-gradient(150% 110% at 50% 100%, #064E3B 0%, #021810 100%);
   background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
   background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%;
   animation: call-bg-flow 20s ease-in-out infinite;
