@@ -123,18 +123,18 @@ export async function optimizeAgentSpeed(
   // PATCH ElevenLabs agent for low-latency English voice. The big knobs:
   //   - llm: Gemini Flash (fast reasoning, default model is slower)
   //   - turn.turn_timeout: time the agent waits after the user stops talking
-  //     before responding. Default 7s feels glacial; 0.8s is brisk without
-  //     interrupting normal pauses mid-sentence.
+  //     before responding. Default 7s is glacial; 0.5s is aggressive — the
+  //     agent will leap on the first beat of silence.
   //   - tts.model_id: eleven_turbo_v2 is the required English TTS model.
-  //   - tts.optimize_streaming_latency: 3 — start speaking the first chunk
-  //     of audio as soon as it's ready (max 4 = aggressive).
+  //   - tts.optimize_streaming_latency: 4 (max) — start speaking the first
+  //     audio chunk as soon as it's ready.
   const body: Record<string, unknown> = {
     conversation_config: {
       agent: { prompt: promptPatch },
-      turn: { turn_timeout: 0.8 },
+      turn: { turn_timeout: 0.5 },
       tts: {
         model_id: "eleven_turbo_v2",
-        optimize_streaming_latency: 3,
+        optimize_streaming_latency: 4,
       },
     },
   };

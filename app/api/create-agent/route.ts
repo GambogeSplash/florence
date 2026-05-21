@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAgent, END_CALL_TOOL } from "@/lib/elevenlabs";
+import {
+  createAgent,
+  END_CALL_TOOL,
+  optimizeAgentSpeed,
+} from "@/lib/elevenlabs";
 import { buildSystemPrompt } from "@/lib/prompt";
 import { BusinessProfile } from "@/lib/types";
 
@@ -50,6 +54,20 @@ export async function POST(req: NextRequest) {
       firstMessage: profile.greeting,
       tools,
     });
+
+    // Immediately apply low-latency settings (turn_timeout 0.5s, Gemini
+    // Flash LLM, max streaming). Without this, the agent uses ElevenLabs's
+    // default 7s turn timeout and feels glacial. Best-effort — if the PATCH
+    // fails, the agent still works, just slower; user can retry via the
+    // dashboard's "Update agent" button.
+    try {
+      await optimizeAgentSpeed(agent_id, { systemPrompt, tools });
+    } catch (optErr) {
+      console.warn(
+        "[create-agent] post-create optimize failed:",
+        optErr instanceof Error ? optErr.message : String(optErr),
+      );
+    }
 
     return NextResponse.json({ agent_id });
   } catch (e: unknown) {
