@@ -152,17 +152,33 @@ function CallInner({ profile, agentId }: Props) {
     bc.onmessage = (e) => {
       if (e.data?.type !== "paid") return;
       playPop();
+      const amount = e.data.amount;
+      const cur = (e.data.currency || "").toUpperCase();
+      const description = e.data.description || "Deposit";
+
+      // Show confirmation in the on-screen transcript
       setLines((prev) => [
         ...prev,
         {
           id: nextId.current++,
           role: "ai",
-          text: `Payment received ✓ — ${e.data.currency?.toUpperCase?.() ?? ""} ${e.data.amount ?? ""} for ${e.data.description ?? "deposit"}. You're booked.`,
+          text: `Payment received ✓ — ${cur} ${amount ?? ""} for ${description}.`,
         },
       ]);
+
+      // Notify the agent verbally too — Florence will get this as a system
+      // contextual update and (per her prompt) acknowledge, give next steps,
+      // and end the call. Without this, she'd keep waiting on the line.
+      try {
+        conversation.sendContextualUpdate(
+          `PAYMENT_RECEIVED: ${cur} ${amount ?? ""} for "${description}". The customer has just completed their payment in another tab. Acknowledge it warmly, confirm next steps, then end the call.`,
+        );
+      } catch {
+        /* SDK may not be connected; transcript update is still shown */
+      }
     };
     return () => bc.close();
-  }, []);
+  }, [conversation]);
 
   // Safety: stop hum on unmount
   useEffect(() => {
