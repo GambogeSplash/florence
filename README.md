@@ -16,22 +16,6 @@ The wedge isn't the voice — every AI receptionist has voice now. The wedge is 
 - **ElevenLabs Conversational AI** — `@elevenlabs/react`, browser-embedded WebRTC (no Twilio)
 - **Stripe Payment Links API** — created on-the-fly by an ElevenLabs client tool
 
-## Quick start
-
-```bash
-git clone https://github.com/GambogeSplash/florence
-cd florence
-cp .env.example .env.local   # then fill in your keys
-npm install
-npm run dev
-```
-
-Then open http://localhost:3000.
-
-You'll need:
-- An **ElevenLabs API key** with `Voices: write`, `ElevenAgents: read+write`, `Text to Speech: access` scopes ([get one](https://elevenlabs.io/app/settings/api-keys))
-- A **Stripe secret key** ([dashboard](https://dashboard.stripe.com/test/apikeys), test mode is fine)
-
 ## Demo flow
 
 1. **`/setup`** — name your business, add services + prices, record a voice sample (we use a curated voice for the hackathon, but the recording UX is there)
@@ -45,6 +29,14 @@ You'll need:
 When the agent is created, `generate_payment_link` is registered as an ElevenLabs **client tool** in its config. The agent decides — based on the system prompt — when to call it. The tool runs in the browser, fires `/api/generate-payment-link` (Stripe `paymentLinks.create`), and returns the URL back to the agent so it can tell the caller.
 
 When Stripe redirects to `/paid`, the page broadcasts a `paid` message on a `BroadcastChannel`. The original call window listens, fires `conversation.sendContextualUpdate()` so Florence learns the payment landed, and renders a "Payment received ✓" line in the transcript.
+
+## Running locally
+
+Required env vars are listed in `.env.example`. You'll need an ElevenLabs API key (with voice + Convai scopes) and a Stripe secret key (test mode is fine).
+
+```
+npm install && npm run dev
+```
 
 ## License
 
