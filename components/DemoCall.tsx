@@ -141,6 +141,29 @@ function CallInner({ profile, agentId }: Props) {
     wasConnectedRef.current = isConnected;
   }, [isConnected]);
 
+  // Listen for payment-confirmation broadcasts from the Stripe success tab,
+  // so this call window can show the "received ✓" beat inline without the
+  // customer having to switch back manually.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+      return;
+    }
+    const bc = new BroadcastChannel("florence-payments");
+    bc.onmessage = (e) => {
+      if (e.data?.type !== "paid") return;
+      playPop();
+      setLines((prev) => [
+        ...prev,
+        {
+          id: nextId.current++,
+          role: "ai",
+          text: `Payment received ✓ — ${e.data.currency?.toUpperCase?.() ?? ""} ${e.data.amount ?? ""} for ${e.data.description ?? "deposit"}. You're booked.`,
+        },
+      ]);
+    };
+    return () => bc.close();
+  }, []);
+
   // Safety: stop hum on unmount
   useEffect(() => {
     return () => stopHum();

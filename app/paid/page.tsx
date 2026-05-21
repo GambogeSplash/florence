@@ -31,9 +31,37 @@ export default function PaidPage({
 
   useEffect(() => {
     setProfile(loadProfile());
-    // Pop on arrival so it feels like a moment of completion.
     unlockSound();
     playPop();
+
+    // Notify any open call tab that payment landed, so the original /demo
+    // window can show the "payment received" beat inline in the transcript
+    // without the customer having to switch back manually.
+    try {
+      const bc = new BroadcastChannel("florence-payments");
+      bc.postMessage({
+        type: "paid",
+        amount: sp.amount ? Number(sp.amount) : null,
+        currency: sp.currency || "usd",
+        description: sp.description || "Deposit",
+        at: Date.now(),
+      });
+      bc.close();
+    } catch {
+      /* BroadcastChannel not supported — older browser, just sit on this page */
+    }
+
+    // After a brief beat, auto-close this tab so the customer is back on
+    // their call window. Falls back gracefully if window.close() is blocked.
+    const t = window.setTimeout(() => {
+      try {
+        window.close();
+      } catch {
+        /* noop */
+      }
+    }, 2400);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const amount = sp.amount ? Number(sp.amount) : null;
@@ -94,19 +122,15 @@ export default function PaidPage({
           them know.
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-          <Link href="/demo" className="w-full">
-            <Button size="lg" className="w-full">
-              Back to call
-            </Button>
-          </Link>
-          <button
-            onClick={() => window.close()}
-            className="text-sm text-muted hover:text-fg transition-colors px-4 py-2"
-          >
-            Close tab
-          </button>
+        <div className="text-xs text-muted/60 font-mono uppercase tracking-wider mb-6">
+          Switch back to your call to keep talking
         </div>
+        <button
+          onClick={() => window.close()}
+          className="text-sm text-muted hover:text-fg transition-colors px-4 py-2"
+        >
+          Close this tab
+        </button>
       </div>
     </main>
   );
