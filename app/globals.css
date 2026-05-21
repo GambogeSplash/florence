@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0A0A0A;
+  --color-card: #111111;
+  --color-border: #1F1F1F;
+  --color-border-strong: #2A2A2A;
+  --color-fg: #FAFAFA;
+  --color-muted: #8A8A8A;
+
+  /* Tella brand accent — signal green. Same color as the status indicator. */
+  --color-accent: #00FF85;
+  --color-accent-dim: #00B85F;
+  --color-accent-soft: rgba(0, 255, 133, 0.12);
+
+  --color-signal: #00FF85;
+  --color-signal-dim: #00B85F;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-signal);
+  color: #000;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes signal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Arc-style luminous purple — bright lavender top, royal purple core,
+   soft magenta lift, deep aubergine base. Flows on a slow loop. */
+.call-bg {
+  background:
+    radial-gradient(130% 100% at 28% 22%, #C084FC 0%, transparent 58%),
+    radial-gradient(120% 90% at 75% 60%, #9333EA 0%, transparent 62%),
+    radial-gradient(110% 80% at 45% 95%, #D946EF 0%, transparent 45%),
+    radial-gradient(150% 110% at 50% 100%, #3B0764 0%, #15012E 100%);
+  background-size: 180% 180%, 180% 180%, 160% 160%, 100% 100%;
+  background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%;
+  animation: call-bg-flow 20s ease-in-out infinite;
+}
+
+@keyframes call-bg-flow {
+  0%, 100% { background-position: 0% 0%, 100% 100%, 50% 50%, 0% 0%; }
+  33%      { background-position: 80% 30%, 20% 80%, 30% 60%, 0% 0%; }
+  66%      { background-position: 100% 70%, 0% 20%, 70% 40%, 0% 0%; }
+}
+
+/* Face breathing — gentle 1.0 → 1.025 → 1.0 over 4.4s */
+@keyframes arc-breathe-kf {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.025); }
+}
+.arc-breathe { animation: arc-breathe-kf 4.4s ease-in-out infinite; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes payment-arrive {
+  0%   { transform: translateY(20px) scale(0.92); opacity: 0; }
+  60%  { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-payment-arrive {
+  animation: payment-arrive 540ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-bg, .arc-breathe { animation: none; }
+}
+
+.animate-signal { animation: signal-pulse 1.6s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 320ms cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-fade-in { animation: fade-in 240ms ease-out; }
