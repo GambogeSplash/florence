@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Button } from "@/components/Button";
-import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ArcFace } from "@/components/ArcFace";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
 import {
   BusinessProfile,
   DEFAULT_AGENT_VOICE_ID,
@@ -64,24 +64,14 @@ export default function SetupPage() {
   const canSubmit = !!audio && consent;
 
   const submit = async () => {
-    if (!audio) return;
+    if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      setSubmitMessage("Cloning your voice…");
-      const form = new FormData();
-      const ext = mimeExt(audio.type);
-      form.append("audio", audio, `voice.${ext}`);
-      form.append("name", `${name} owner voice`);
-      const voiceRes = await fetch("/api/clone-voice", {
-        method: "POST",
-        body: form,
-      });
-      const voiceData = (await voiceRes.json()) as
-        | { voice_id: string }
-        | { error: string };
-      if ("error" in voiceData) throw new Error(voiceData.error);
-
+      // Skip voice cloning entirely — every new agent uses the Florence
+      // default voice (Nigerian female from the ElevenLabs library). Faster
+      // setup, no voice-limit issues, voice can still be swapped per-agent
+      // from the dashboard.
       setSubmitMessage("Building your receptionist…");
       const profile: BusinessProfile = {
         name,
@@ -89,7 +79,7 @@ export default function SetupPage() {
         greeting: greeting.replace(/\[Business Name\]/gi, name),
         availability,
         services: services.filter((s) => s.name.trim() && s.price > 0),
-        voiceId: voiceData.voice_id,
+        voiceId: DEFAULT_AGENT_VOICE_ID,
         currency,
         image: businessImage,
       };
@@ -104,31 +94,9 @@ export default function SetupPage() {
         | { error: string };
       if ("error" in agentData) throw new Error(agentData.error);
 
-      // Auto-apply the Florence default voice (Nigerian female) so the demo
-      // lands on a great voice without manual library picking. Best-effort —
-      // if the patch fails, we keep the cloned voice and let the user swap
-      // from the dashboard.
-      setSubmitMessage("Tuning her voice…");
-      let voiceId = profile.voiceId!;
-      try {
-        const r = await fetch("/api/update-voice", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            agent_id: agentData.agent_id,
-            voice_id: DEFAULT_AGENT_VOICE_ID,
-          }),
-        });
-        const d = (await r.json()) as { ok?: boolean; error?: string };
-        if (d.ok) voiceId = DEFAULT_AGENT_VOICE_ID;
-      } catch {
-        /* keep cloned voice */
-      }
-
       const final: BusinessProfile = {
         ...profile,
         agentId: agentData.agent_id,
-        voiceId,
       };
       saveProfile(final);
 
@@ -373,9 +341,11 @@ export default function SetupPage() {
         )}
 
         {step === 3 && (
-          <Card title="Clone your voice" subtitle="Step 3 of 3">
+          <Card title="Voice" subtitle="Step 3 of 3">
             <div className="text-sm text-muted mb-4 leading-relaxed">
-              Record ~30 seconds. Speak naturally, anything works.
+              Record ~30 seconds. Speak naturally, anything works. Florence
+              uses a curated voice for now — your recording helps us train
+              future personalized voices.
             </div>
             <VoiceRecorder
               onChange={setAudio}
@@ -392,8 +362,8 @@ export default function SetupPage() {
               <span className="text-sm text-muted leading-relaxed">
                 I confirm this is{" "}
                 <span className="text-fg">my own voice</span>
-                {" "}and I authorize cloning it for use as my business&apos;s
-                AI receptionist.
+                {" "}and I authorize using it for my business&apos;s AI
+                receptionist.
               </span>
             </label>
 
