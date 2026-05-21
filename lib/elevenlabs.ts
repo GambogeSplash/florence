@@ -120,24 +120,28 @@ export async function optimizeAgentSpeed(
   if (opts?.systemPrompt) promptPatch.prompt = opts.systemPrompt;
   if (opts?.tools) promptPatch.tools = opts.tools;
 
-  // PATCH ElevenLabs agent for low-latency English voice. The big knobs:
-  //   - llm: Gemini Flash (fast reasoning, default model is slower)
-  //   - turn.turn_timeout: time the agent waits after the user stops talking
-  //     before responding. Default 7s is glacial; 0.5s is aggressive — the
-  //     agent will leap on the first beat of silence.
-  //   - tts.model_id: eleven_turbo_v2 is the required English TTS model.
-  //   - tts.optimize_streaming_latency: 4 (max) — start speaking the first
-  //     audio chunk as soon as it's ready.
+  // PATCH ElevenLabs agent for low-latency English voice.
   const body: Record<string, unknown> = {
     conversation_config: {
       agent: { prompt: promptPatch },
-      turn: { turn_timeout: 0.5 },
+      turn: {
+        // Different ElevenLabs versions have used different field names for
+        // "how long to wait after user stops talking." Send all known
+        // variants so at least one takes effect.
+        turn_timeout: 0.5,
+        silence_end_call_timeout: -1,
+        mode: "turn",
+      },
       tts: {
         model_id: "eleven_turbo_v2",
         optimize_streaming_latency: 4,
       },
     },
   };
+
+  console.log(
+    `[optimizeAgentSpeed] PATCH agent=${agentId} body=${JSON.stringify(body)}`,
+  );
 
   const res = await fetch(
     `${BASE}/v1/convai/agents/${encodeURIComponent(agentId)}`,
@@ -150,11 +154,35 @@ export async function optimizeAgentSpeed(
       body: JSON.stringify(body),
     },
   );
+  const text = await res.text();
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(
-      `ElevenLabs optimizeAgentSpeed failed: ${res.status} ${text}`,
+    console.error(
+      `[optimizeAgentSpeed] PATCH failed ${res.status}: ${text.slice(0, 500)}`,
     );
+    throw new Error(`ElevenLabs optimizeAgentSpeed failed: ${res.status} ${text}`);
+  }
+  console.log(`[optimizeAgentSpeed] PATCH ok. body=${text.slice(0, 500)}`);
+
+  // Read back the agent to verify what stuck.
+  try {
+    const r = await fetch(
+      `${BASE}/v1/convai/agents/${encodeURIComponent(agentId)}`,
+      { headers: { "xi-api-key": key() } },
+    );
+    if (r.ok) {
+      const data = (await r.json()) as {
+        conversation_config?: {
+          agent?: { prompt?: { llm?: string } };
+          turn?: Record<string, unknown>;
+          tts?: Record<string, unknown>;
+        };
+      };
+      console.log(
+        `[optimizeAgentSpeed] readback turn=${JSON.stringify(data.conversation_config?.turn)} tts=${JSON.stringify(data.conversation_config?.tts)} llm=${data.conversation_config?.agent?.prompt?.llm}`,
+      );
+    }
+  } catch {
+    /* readback failure is non-fatal */
   }
 }
 
