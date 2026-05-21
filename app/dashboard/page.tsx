@@ -137,8 +137,8 @@ export default function DashboardPage() {
     <>
       <Nav />
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <ClickableBusinessImage
               profile={profile}
               onChange={(image) => {
@@ -148,17 +148,24 @@ export default function DashboardPage() {
               }}
             />
             <div className="min-w-0">
-              <div className="text-xs uppercase tracking-wider text-muted font-mono mb-1">
+              <div className="text-[10px] uppercase tracking-wider text-muted font-mono mb-1">
                 Receptionist
               </div>
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight truncate">
+              <h1 className="text-xl sm:text-3xl font-semibold tracking-tight truncate">
                 {profile.name}
               </h1>
-              <div className="text-sm text-muted mt-0.5">{profile.type}</div>
+              <div className="text-xs sm:text-sm text-muted mt-0.5 truncate">
+                {profile.type}
+              </div>
             </div>
           </div>
           <Link href="/demo" className="shrink-0">
-            <Button size="lg">Test agent →</Button>
+            <Button size="md" className="sm:hidden">
+              Test →
+            </Button>
+            <Button size="lg" className="hidden sm:inline-flex">
+              Test agent →
+            </Button>
           </Link>
         </div>
 
@@ -467,7 +474,7 @@ function InventorySection({
               } ${overIdx === i ? "bg-accent/5" : ""}`}
             >
               <div
-                className="text-muted/50 hover:text-muted cursor-grab active:cursor-grabbing text-xs select-none"
+                className="hidden sm:block text-muted/50 hover:text-muted cursor-grab active:cursor-grabbing text-xs select-none"
                 title="Drag to reorder"
               >
                 ⋮⋮
@@ -480,7 +487,7 @@ function InventorySection({
               <input
                 value={s.name}
                 onChange={(e) => update(i, { name: e.target.value })}
-                className="flex-1 bg-transparent border-none text-sm text-fg focus:outline-none focus:bg-[#0E0E0E] rounded px-1 py-1"
+                className="flex-1 min-w-0 bg-transparent border-none text-sm text-fg focus:outline-none focus:bg-[#0E0E0E] rounded px-1 py-1"
               />
               <PriceInput
                 value={s.price}
@@ -489,7 +496,7 @@ function InventorySection({
               />
               <button
                 onClick={() => remove(i)}
-                className="w-8 text-muted hover:text-[#FF6B6B] text-lg leading-none"
+                className="w-7 sm:w-8 text-muted hover:text-[#FF6B6B] text-lg leading-none shrink-0"
                 aria-label="Remove"
               >
                 ×
@@ -643,7 +650,7 @@ function PriceInput({
     currency.toUpperCase();
   return (
     <div
-      className={`relative ${compact ? "w-24" : "w-28"} ${compact ? "" : "shrink-0"}`}
+      className={`relative ${compact ? "w-24" : "w-20 sm:w-28"} ${compact ? "" : "shrink-0"}`}
     >
       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted text-xs font-mono pointer-events-none">
         {sym}
@@ -800,8 +807,8 @@ function ChangeVoiceCard({
   >("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const submit = async () => {
-    if (!voiceId.trim() || !profile.agentId) return;
+  const apply = async (id: string) => {
+    if (!id.trim() || !profile.agentId) return;
     setStatus("saving");
     setError(null);
     try {
@@ -810,15 +817,15 @@ function ChangeVoiceCard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agent_id: profile.agentId,
-          voice_id: voiceId.trim(),
+          voice_id: id.trim(),
         }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!data.ok) throw new Error(data.error || "Update failed");
 
-      const updated = { ...profile, voiceId: voiceId.trim() };
+      const updated = { ...profile, voiceId: id.trim() };
       saveProfile(updated);
-      onSaved(voiceId.trim());
+      onSaved(id.trim());
       setStatus("saved");
       setVoiceId("");
       setTimeout(() => setStatus("idle"), 2000);
@@ -827,6 +834,12 @@ function ChangeVoiceCard({
       setStatus("error");
     }
   };
+
+  const submit = () => apply(voiceId);
+
+  const PRESETS: Array<{ label: string; id: string }> = [
+    { label: "Nigerian female", id: "eOHsvebhdtt0XFeHVMQY" },
+  ];
 
   return (
     <div className="mt-6 rounded-2xl border border-border bg-card p-6">
@@ -851,12 +864,37 @@ function ChangeVoiceCard({
         <span className="text-fg">Add to my voices</span>, copy its{" "}
         <span className="text-fg font-mono">voice_id</span>, and paste it here.
       </div>
-      <div className="flex gap-2">
+      {PRESETS.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-muted font-mono">
+            Presets:
+          </span>
+          {PRESETS.map((p) => {
+            const active = profile.voiceId === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => apply(p.id)}
+                disabled={status === "saving"}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                  active
+                    ? "border-accent/60 bg-accent/10 text-accent"
+                    : "border-border bg-[#0E0E0E] text-muted hover:text-fg hover:border-border-strong"
+                }`}
+              >
+                {p.label}{" "}
+                {active && <span className="ml-1">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className="flex flex-col sm:flex-row gap-2">
         <input
           value={voiceId}
           onChange={(e) => setVoiceId(e.target.value)}
           placeholder="voice_id (e.g. abc123XYZ…)"
-          className="flex-1 rounded-lg bg-[#0E0E0E] border border-border px-3 py-2.5 text-sm text-fg font-mono placeholder:text-[#555] focus:outline-none focus:border-signal/60"
+          className="flex-1 rounded-lg bg-[#0E0E0E] border border-border px-3 py-2.5 text-sm text-fg font-mono placeholder:text-[#555] focus:outline-none focus:border-accent/60"
         />
         <Button
           onClick={submit}

@@ -5,7 +5,7 @@ import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { BusinessProfile } from "@/lib/types";
 import { ArcFace, ArcFaceState } from "./ArcFace";
 import { Transcript, TranscriptLine } from "./Transcript";
-import { PaymentCard, PaymentLink } from "./PaymentCard";
+import { PaymentLink } from "./PaymentCard";
 import {
   isMuted,
   playConnect,
@@ -25,7 +25,6 @@ type Props = {
 
 function CallInner({ profile, agentId }: Props) {
   const [lines, setLines] = useState<TranscriptLine[]>([]);
-  const [paymentLink, setPaymentLink] = useState<PaymentLink | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [glanceCount, setGlanceCount] = useState(0);
@@ -52,9 +51,12 @@ function CallInner({ profile, agentId }: Props) {
         if ("error" in data) {
           return `Payment link failed: ${data.error}`;
         }
-        setPaymentLink(data);
         playPop();
         setGlanceCount((g) => g + 1);
+        setLines((prev) => [
+          ...prev,
+          { id: nextId.current++, type: "payment" as const, payment: data },
+        ]);
         return `Payment link sent on screen. Amount ${params.amount} ${data.currency.toUpperCase()} for "${params.description}".`;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -90,7 +92,6 @@ function CallInner({ profile, agentId }: Props) {
     setStarting(true);
     setError(null);
     setLines([]);
-    setPaymentLink(null);
     try {
       const res = await fetch(
         `/api/signed-url?agent_id=${encodeURIComponent(agentId)}`,
@@ -302,11 +303,9 @@ function CallInner({ profile, agentId }: Props) {
         </div>
       </div>
 
-      {/* Right column on desktop: payment card + transcript stacked.
-          On mobile: just stacks below the call panel. */}
+      {/* Right column on desktop: transcript only. Payment card lives
+          inside the transcript as a special line type. */}
       <div className="flex flex-col gap-3 lg:h-full lg:min-h-0">
-        {paymentLink && <PaymentCard link={paymentLink} />}
-
         <div className="rounded-2xl border border-border bg-card flex flex-col overflow-hidden h-[44vh] lg:h-auto lg:flex-1 lg:min-h-0">
           <div className="px-4 pt-4 pb-2 text-[10px] uppercase tracking-wider text-muted font-mono shrink-0 border-b border-border/60 flex items-center justify-between">
             <span>Transcript</span>

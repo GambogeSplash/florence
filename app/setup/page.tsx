@@ -233,10 +233,10 @@ export default function SetupPage() {
                           updateService(i, { name: e.target.value })
                         }
                         placeholder="e.g. Custom birthday cake"
-                        className={`${inputClass} flex-1`}
+                        className={`${inputClass} flex-1 min-w-0`}
                       />
-                      <div className="relative w-28">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-mono pointer-events-none">
+                      <div className="relative w-20 sm:w-28 shrink-0">
+                        <span className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-muted text-sm font-mono pointer-events-none">
                           {currencySymbol(currency)}
                         </span>
                         <input
@@ -248,12 +248,12 @@ export default function SetupPage() {
                             })
                           }
                           placeholder="0"
-                          className={`${inputClass} pl-7 text-right tabular-nums`}
+                          className={`${inputClass} pl-6 sm:pl-7 text-right tabular-nums`}
                         />
                       </div>
                       <button
                         onClick={() => removeService(i)}
-                        className="h-[38px] w-8 text-muted hover:text-[#FF6B6B] text-lg leading-none"
+                        className="h-[38px] w-7 sm:w-8 text-muted hover:text-[#FF6B6B] text-lg leading-none shrink-0"
                         aria-label="Remove"
                       >
                         ×

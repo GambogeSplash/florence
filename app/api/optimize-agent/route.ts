@@ -27,8 +27,16 @@ export async function POST(req: NextRequest) {
         parameters: {
           type: "object",
           properties: {
-            amount: { type: "number" },
-            description: { type: "string" },
+            amount: {
+              type: "number",
+              description:
+                "Deposit amount in whole units of the local currency (e.g., 40 for $40). For a deposit, use 30% of the service price rounded to the nearest whole number.",
+            },
+            description: {
+              type: "string",
+              description:
+                "Short human-readable description of what the payment is for (e.g., 'Deposit — Custom Birthday Cake').",
+            },
           },
           required: ["amount", "description"],
         },
