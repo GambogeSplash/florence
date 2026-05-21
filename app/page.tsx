@@ -15,7 +15,7 @@ export default function Home() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[1.05] mb-6">
-            The voice that picks up
+            The voice that picks{" "}up
             <br />
             <span className="text-accent">when you can&apos;t.</span>
           </h1>
